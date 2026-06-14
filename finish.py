@@ -21,7 +21,7 @@ class FinishScreen:
 
     def draw_ui(self, screen):
         w, h = screen.get_size()
-        title = self.font_big.render('YOU WIN!', True, (100, 255, 100))
+        title = self.font_big.render('Well Done! You have completed today\'s exercises', True, (100, 255, 100))
         hint  = self.font_small.render('Press any key to exit', True, (180, 180, 180))
         screen.blit(title, title.get_rect(center=(w // 2, h // 2 - 30)))
         screen.blit(hint,  hint.get_rect(center=(w // 2, h // 2 + 30)))

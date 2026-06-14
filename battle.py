@@ -1,5 +1,6 @@
 import pygame
 import sys
+from default import ENEMY_DATA
 
 
 class BattleScreen:
@@ -19,6 +20,8 @@ class BattleScreen:
         self._flash_timer = 0
         self._death_timer = 0
         self._victory = False
+        self._xp_gained = 0
+        self._levelled_up = False
         self._rep_grace = True
         self.background_img = pygame.image.load('graphics/battle-bg.png').convert_alpha()
         self.bar_frames = [
@@ -95,14 +98,19 @@ class BattleScreen:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return self.back_to
 
-        if self.enemy_hp <= 0 and self._death_timer == 0:
+        if self.enemy_hp <= 0 and self._death_timer == 0 and not self._victory:
             self._death_timer = 180  # 3 seconds at 60 fps
 
         if self._death_timer > 0:
             self._death_timer -= 1
             if self._death_timer == 0:
                 self.enemy.kill()
+                xp = ENEMY_DATA[self.enemy.enemy_type]['xp']
+                self._levelled_up = self.player.add_xp(xp)
+                self._xp_gained = xp
                 self._victory = True
+                if not self.back_to.enemy_sprites:
+                    self.back_to.drop_key(self.enemy.rect.center)
 
         if self._victory:
             for event in (events or []):
@@ -137,8 +145,17 @@ class BattleScreen:
 
         w_screen, h_screen = screen.get_size()
         if self._victory:
-            msg = self.font.render('Enemy defeated! Press SPACE to continue', True, (255, 220, 80))
-            screen.blit(msg, msg.get_rect(center=(w_screen // 2, h_screen // 2)))
+            cx = w_screen // 2
+            cy = h_screen // 2 - 48
+            line1 = self.font.render(f'Enemy defeated!  +{self._xp_gained} XP', True, (255, 220, 80))
+            if self._levelled_up:
+                line2 = self.font.render(f'LEVEL UP!  Now Lv.{self.player.level}', True, (100, 255, 100))
+            else:
+                line2 = self.font.render(f'Lv.{self.player.level}   {self.player.xp} / {self.player.xp_to_next()} XP', True, (180, 180, 180))
+            line3 = self.font.render('Press SPACE to continue', True, (160, 160, 160))
+            screen.blit(line1, line1.get_rect(center=(cx, cy)))
+            screen.blit(line2, line2.get_rect(center=(cx, cy + 40)))
+            screen.blit(line3, line3.get_rect(center=(cx, cy + 80)))
         else:
             if self.ble_controller and self.ble_controller.is_connected():
                 hint = 'REP: Attack   ESC: Flee'

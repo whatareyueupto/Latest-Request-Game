@@ -1,6 +1,10 @@
 import pygame
+import json
+import os
 from default import *
 from entity import Entity
+
+SAVE_FILE = 'save.json'
 
 
 class Player(Entity):
@@ -20,6 +24,33 @@ class Player(Entity):
         self.image = self.animations['right'][0]
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -2)
+        self.inventory = []
+        self._load_save()
+
+    def _load_save(self):
+        if os.path.exists(SAVE_FILE):
+            data = json.loads(open(SAVE_FILE).read())
+            self.xp    = data.get('xp', 0)
+            self.level = data.get('level', 1)
+        else:
+            self.xp    = 0
+            self.level = 1
+
+    def _save(self):
+        open(SAVE_FILE, 'w').write(json.dumps({'xp': self.xp, 'level': self.level}))
+
+    def xp_to_next(self):
+        return self.level * 100
+
+    def add_xp(self, amount):
+        self.xp += amount
+        levelled_up = False
+        while self.xp >= self.xp_to_next():
+            self.xp -= self.xp_to_next()
+            self.level += 1
+            levelled_up = True
+        self._save()
+        return levelled_up
 
     def input(self):
         keys = pygame.key.get_pressed()
