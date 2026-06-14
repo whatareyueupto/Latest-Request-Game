@@ -17,3 +17,8 @@ class Item(pygame.sprite.Sprite):
 class KeyItem(Item):
     def __init__(self, pos, groups):
         super().__init__(pos, groups, 'graphics/key1.png', 'key')
+
+
+class SwordItem(Item):
+    def __init__(self, pos, groups):
+        super().__init__(pos, groups, 'graphics/sword.png', 'sword')

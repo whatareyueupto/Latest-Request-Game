@@ -1,5 +1,6 @@
 import pygame,sys
 from level import Level
+from tutorial_level import TutorialLevel
 from default import *
 from ble_controller import BleController
 from connection_screen import ConnectionScreen
@@ -10,7 +11,8 @@ class SceneManager:
         self.ble_controller = ble_controller
         self._was_connected = False
         level = Level(surface, ble_controller)
-        self._scene = ConnectionScreen(ble_controller, next_scene=level)
+        tutorial = TutorialLevel(surface, next_scene=level)
+        self._scene = ConnectionScreen(ble_controller, next_scene=tutorial)
 
     def run(self, events):
         connected = self.ble_controller.is_connected()
