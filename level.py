@@ -21,6 +21,8 @@ class Level:
 
         self._last_safe_pos = None
         self.key_sprites = pygame.sprite.Group()
+        self._intro_timer = 600
+        self._hud_font = pygame.font.Font('graphics/m5x7.ttf', 32)
         self.create_map()
 
     def create_map(self):
@@ -80,6 +82,8 @@ class Level:
             self.player.rect.center = self.player.hitbox.center
 
     def run(self, events=None):
+        if self._intro_timer > 0:
+            self._intro_timer -= 1
         self._last_safe_pos = self.player.hitbox.topleft
         self.visible_sprites.update()
         self.visible_sprites.custom_draw(self.player)
@@ -94,11 +98,25 @@ class Level:
         return None
 
     def draw_ui(self, screen):
-        if not hasattr(self, '_hud_font'):
-            self._hud_font = pygame.font.Font('graphics/m5x7.ttf', 32)
         p = self.player
         text = self._hud_font.render(f'Lv.{p.level}   {p.xp} / {p.xp_to_next()} XP', True, (220, 220, 220))
         screen.blit(text, (12, 12))
+
+        if self._intro_timer > 0:
+            intro_lines = ['Defeat all the enemies in this room',
+                           'and find the key to complete this level.']
+            pad = 12
+            box_h = pad + len(intro_lines) * 36 + pad
+            box_rect = pygame.Rect(16, screen.get_height() - box_h - 16,
+                                   screen.get_width() - 32, box_h)
+            panel = pygame.Surface((box_rect.width, box_rect.height), pygame.SRCALPHA)
+            panel.fill((10, 10, 30, 200))
+            screen.blit(panel, box_rect.topleft)
+            ty = box_rect.top + pad
+            for line in intro_lines:
+                surf = self._hud_font.render(line, True, (220, 220, 200))
+                screen.blit(surf, (box_rect.left + pad, ty))
+                ty += surf.get_height() + 4
 
 
 class YSortCameraGroup(pygame.sprite.Group):

@@ -1,6 +1,7 @@
 import pygame
 import sys
 from default import ENEMY_DATA
+import request_bridge
 
 
 class BattleScreen:
