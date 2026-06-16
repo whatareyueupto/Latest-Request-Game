@@ -283,6 +283,23 @@ def get_results():
             "session_xp": _workout["xp"], "session_done": list(_workout["done"])}
 
 
+@app.post("/api/results/clear")
+async def clear_results():
+    """Wipe the saved workout log + the current session counters. The dashboard
+    'clear data' button calls this. The game only ever writes this file (never
+    reads it), so clearing it can't affect a running game or the band/Stella."""
+    _workout["done"] = []; _workout["xp"] = 0
+    _results.clear()
+    try:
+        p = _log_path()
+        if p.exists():
+            p.unlink()
+    except Exception:
+        pass
+    _broadcast({"type": "results", "results": [], "session_xp": 0})
+    return {"ok": True}
+
+
 # ---- runner.py connects here and pushes frames / receives input -------------
 @app.websocket("/ws/game")
 async def ws_game(ws: WebSocket):
