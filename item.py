@@ -17,6 +17,12 @@ class Item(pygame.sprite.Sprite):
 class KeyItem(Item):
     def __init__(self, pos, groups):
         super().__init__(pos, groups, 'graphics/key1.png', 'key')
+        self.frames = [pygame.image.load(f'graphics/key{i}.png').convert_alpha() for i in range(1, 5)]
+        self.frame_index = 0.0
+
+    def update(self):
+        self.frame_index = (self.frame_index + 0.075) % len(self.frames)
+        self.image = self.frames[int(self.frame_index)]
 
 
 class SwordItem(Item):

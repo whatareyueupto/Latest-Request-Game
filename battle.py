@@ -131,7 +131,7 @@ class BattleScreen:
                 self.enemy_hp = self._reps_per_set
                 self._flash_timer = 60
             else:
-                self._death_timer = 180  # 3 seconds at 60 fps
+                self._death_timer = 90  # 3 seconds at 60 fps
 
         if self._death_timer > 0:
             self._death_timer -= 1
@@ -190,16 +190,15 @@ class BattleScreen:
                 screen.blit(self.heart_img, (x + i * spacing, y))
             return x
 
-        start_x = draw_row(row1_count, enemy_bottom)
+        draw_row(row1_count, enemy_bottom)
         if row2_count > 0:
             draw_row(row2_count, enemy_bottom + heart_h + 4)
 
         name_surf = self.font.render(
             f'{self.enemy.enemy_type.capitalize()}   Set {current_set}/{self._total_sets}',
             False, (220, 220, 220))
-        rows_used = 2 if row2_count > 0 else 1
-        name_y = enemy_bottom + rows_used * (heart_h + 4) + 2
-        screen.blit(name_surf, (start_x, name_y))
+        name_y = enemy_bottom + 2 * (heart_h + 4) + 2
+        screen.blit(name_surf, name_surf.get_rect(centerx=enemy_cx, top=name_y))
 
         w_screen, h_screen = screen.get_size()
         if self._victory:

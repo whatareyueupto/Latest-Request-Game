@@ -42,7 +42,7 @@ class TutorialLevel:
                     NPC((x, y), [self.visible_sprites, self.npc_sprites, self.obstacle_sprites],
                         dialogue=["Your strength is undeniable, get ready to battle.",
                                   "A sword lies in this room awaiting you.",
-                                  "You can pick up items by walking into it them."])
+                                  "You can pick up items by walking into them."])
                     Tile((x, y), [self.visible_sprites], ' ')
                 else:
                     Tile((x, y), [self.visible_sprites], ' ')
