@@ -12,7 +12,18 @@ class BattleScreen:
         self.back_to = back_to
         self.display_surface = surface
         self.ble_controller = ble_controller
-        self.enemy_hp = enemy.hp
+        self._reps_per_set   = max(1, getattr(enemy, 'reps', enemy.hp))
+        self._total_sets     = max(1, getattr(enemy, 'sets', 1))
+        self._sets_remaining = self._total_sets
+        self.enemy_hp        = self._reps_per_set
+        self._back_anim      = 0.0
+        try:
+            self._back_frames = [
+                pygame.image.load(f'graphics/{enemy.enemy_type}{i}.png').convert_alpha()
+                for i in range(3, 5)
+            ]
+        except (FileNotFoundError, pygame.error):
+            self._back_frames = list(enemy.frames)
         self.font = pygame.font.Font('graphics/m5x7.ttf', 32)
         heart = pygame.image.load('graphics/hp2.png').convert_alpha()
         self.heart_img = pygame.transform.scale(heart, (32, 32))
@@ -53,6 +64,13 @@ class BattleScreen:
         bar_y = h // 2 - 8 + player_sprite.get_height() + 30
         self.display_surface.blit(bar_img, (bar_x, bar_y))
         if self.enemy.alive():
+            front_x = 3 * w // 4 - 8
+            front_y = h // 2 - 8
+            step_x, step_y = 18, 10
+            N = self._total_sets
+            self._back_anim = (self._back_anim + self.enemy.animation_speed) % len(self._back_frames)
+            back_img = pygame.transform.flip(self._back_frames[int(self._back_anim)], True, False)
+
             self.enemy.animate()
             img = self.enemy.image
             if self._flash_timer > 0:
@@ -60,8 +78,14 @@ class BattleScreen:
                 if self._flash_timer % 8 >= 4:
                     img = img.copy()
                     img.fill((255, 255, 255), special_flags=pygame.BLEND_RGB_MAX)
-            flipped = pygame.transform.flip(img, True, False)
-            self.display_surface.blit(flipped, (3 * w // 4 - 8, h // 2 - 8))
+            active_img = pygame.transform.flip(img, True, False)
+
+            active_i = self._sets_remaining - 1
+            for i in range(self._sets_remaining - 1, 0, -1):
+                ex = front_x - i * step_x
+                ey = front_y if (N - 1 - i) % 2 == 0 else front_y - step_y
+                self.display_surface.blit(active_img if i == active_i else back_img, (ex, ey))
+            self.display_surface.blit(active_img if active_i == 0 else back_img, (front_x, front_y))
 
         # handle input (skipped during death sequence)
         if self._death_timer == 0:
@@ -102,7 +126,12 @@ class BattleScreen:
                 return self.back_to
 
         if self.enemy_hp <= 0 and self._death_timer == 0 and not self._victory:
-            self._death_timer = 180  # 3 seconds at 60 fps
+            if self._sets_remaining > 1:
+                self._sets_remaining -= 1
+                self.enemy_hp = self._reps_per_set
+                self._flash_timer = 60
+            else:
+                self._death_timer = 180  # 3 seconds at 60 fps
 
         if self._death_timer > 0:
             self._death_timer -= 1
@@ -143,34 +172,33 @@ class BattleScreen:
 
         enemy_bottom = (ey_small + sprite_h) * scale + 120
 
-        # Show ONE set's worth of hearts at a time (reps per set), refilling each
-        # new set, so a 15-rep set never overflows the screen.
-        reps_per_set = max(1, getattr(self.enemy, 'reps', self.enemy_hp))
-        total_sets   = max(1, getattr(self.enemy, 'sets', 1))
-        total_hp     = reps_per_set * total_sets
-        remaining    = max(0, self.enemy_hp)
-        if remaining == 0:
-            hearts = 0
-        elif remaining % reps_per_set == 0:
-            hearts = reps_per_set            # a fresh, full set
-        else:
-            hearts = remaining % reps_per_set
-        current_set = min(total_sets, (total_hp - remaining) // reps_per_set + 1)
+        hearts      = max(0, self.enemy_hp)
+        current_set = self._total_sets - self._sets_remaining + 1
 
-        # Lay the row out so it always fits on screen, shifted left of the enemy.
-        spacing  = 36
-        row_w    = hearts * spacing
+        spacing     = 36
+        heart_h     = self.heart_img.get_height()
+        max_per_row = 8
+        row1_count  = min(hearts, max_per_row)
+        row2_count  = hearts - row1_count
+
         enemy_cx = ex_small * scale + (sprite_w * scale) // 2
-        start_x  = enemy_cx - row_w // 2
-        start_x  = min(start_x, screen.get_width() - row_w - 24)
-        start_x  = max(24, start_x)
-        for i in range(hearts):
-            screen.blit(self.heart_img, (start_x + i * spacing, enemy_bottom))
+
+        def draw_row(count, y):
+            w = count * spacing
+            x = max(24, min(enemy_cx - w // 2, screen.get_width() - w - 24))
+            for i in range(count):
+                screen.blit(self.heart_img, (x + i * spacing, y))
+            return x
+
+        start_x = draw_row(row1_count, enemy_bottom)
+        if row2_count > 0:
+            draw_row(row2_count, enemy_bottom + heart_h + 4)
 
         name_surf = self.font.render(
-            f'{self.enemy.enemy_type.capitalize()}   Set {current_set}/{total_sets}',
+            f'{self.enemy.enemy_type.capitalize()}   Set {current_set}/{self._total_sets}',
             False, (220, 220, 220))
-        name_y = enemy_bottom + self.heart_img.get_height() + 6
+        rows_used = 2 if row2_count > 0 else 1
+        name_y = enemy_bottom + rows_used * (heart_h + 4) + 2
         screen.blit(name_surf, (start_x, name_y))
 
         w_screen, h_screen = screen.get_size()
@@ -206,7 +234,7 @@ class BattleScreen:
             lines, current = [], ''
             for word in words:
                 test = (current + ' ' + word).strip()
-                if self.font.size(test)[0] <= bar_w_screen:
+                if self.font.size(test)[0] <= bar_w_screen * 1.5:
                     current = test
                 else:
                     if current:

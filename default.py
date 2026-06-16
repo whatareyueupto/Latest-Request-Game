@@ -7,11 +7,13 @@ SCALE = 4
 ENEMY_DATA = {
     'ghost':    {'hp': 2, 'frames': 2, 'animation_speed': 0.01, 'exercise': 'Shoulder External Rotation', 'xp': 50},
     'skeleton': {'hp': 3, 'frames': 2, 'animation_speed': 0.01, 'exercise': 'Banded I-Y-T Raises',        'xp': 100},
+    'zombie':   {'hp': 3, 'frames': 2, 'animation_speed': 0.01, 'exercise': 'Single-Arm Row to Press',    'xp': 75},
 }
 
 ENEMY_MAP = {
     'e': 'ghost',
-    's': 'skeleton'
+    's': 'skeleton',
+    'z': 'zombie',
 }
 
 WORLD_MAP = [
@@ -32,7 +34,7 @@ WORLD_MAP = [
 ['x',' ',' ',' ',' ',' ',' ','x','x','x',' ',' ',' ',' ',' ','x','x',' ',' ','x'],
 ['x',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ','e',' ','x',' ',' ',' ','x'],
 ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-['x','x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+['x','x',' ',' ',' ',' ',' ',' ',' ',' ','z',' ',' ',' ',' ',' ',' ',' ',' ','x'],
 ['x','x','x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x','x'],
 ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x']
 ]

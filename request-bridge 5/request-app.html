@@ -2868,13 +2868,15 @@ function bridgePrefillRx(){
   if(r) r.value=e.reps; if(s) s.value=e.sets;
   bridgePush(true);
 }
+const _overrides={};
 function bridgePush(silent){
   const list=physioRx();
   if(!list.length){ bridgePostSession({plan:[{exercise:'Band pull-apart',reps:12,sets:3}],current:0,patient:state.player.name},silent); return; }
   const sel=document.getElementById('brExercise'); const idx=Math.min(+(sel&&sel.value||0),list.length-1);
   const reps=+(document.getElementById('brReps')||{}).value||list[idx].reps;
   const sets=+(document.getElementById('brSets')||{}).value||list[idx].sets;
-  const plan=list.map((e,i)=> i===idx ? {exercise:e.name,reps,sets} : {exercise:e.name,reps:e.reps,sets:e.sets});
+  _overrides[idx]={reps,sets};
+  const plan=list.map((e,i)=> _overrides[i] ? {exercise:e.name,reps:_overrides[i].reps,sets:_overrides[i].sets} : {exercise:e.name,reps:e.reps,sets:e.sets});
   bridgePostSession({plan, current:idx, exercise:plan[idx].exercise, reps, sets, patient:state.player.name}, silent);
 }
 function bridgeSendSession(){ bridgePush(false); }

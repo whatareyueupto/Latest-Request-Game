@@ -4,20 +4,20 @@
   "plan": [
     {
       "exercise": "Shoulder External Rotation",
-      "reps": 12,
-      "sets": 3
+      "reps": 2,
+      "sets": 1
     },
     {
       "exercise": "Banded I-Y-T Raises",
-      "reps": 15,
-      "sets": 3
+      "reps": 3,
+      "sets": 1
     },
     {
       "exercise": "Single-Arm Row to Press",
-      "reps": 10,
-      "sets": 3
+      "reps": 3,
+      "sets": 1
     }
   ],
-  "current": 1,
-  "updated": 1781571417.871318
+  "current": 2,
+  "updated": 1781575518.6554792
 }
